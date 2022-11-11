@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from NLP import NLP
 import uvicorn
 from pydantic import BaseModel
+import re
 
 app = FastAPI()
 
@@ -25,7 +26,16 @@ async def generate(req: PredictReq):
             req.category)}
     if req.number == 0:
         return {"error": "생성하고 싶은 문장 개수를 입력해주세요."}
-    return {"generated": nlp.generate(req.category, req.sentence, req.number)}
+    sentences = re.findall('[^.]+.', req.sentence)
+    print(sentences)
+    last_sentence = sentences[-1]
+    if req.sentence.strip() == '':
+        return {"error": "입력 '{}'이 너무 짧습니다. 더 길게 입력해주세요.".format(req.sentence)}
+    # 마지막 문장 너무 짧은 경우 앞에 문장도 추가한다
+    if len(sentences) > 1 and (len(last_sentence.strip()) < 10):
+        last_sentence = sentences[-2] + sentences[-1]
+    print(last_sentence)
+    return {"generated": nlp.generate(req.category, last_sentence.strip(), req.number)}
 
 
 if __name__ == '__main__':

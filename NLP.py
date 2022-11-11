@@ -31,7 +31,7 @@ class NLP:
         while len(result) < number:
             input_ids = self.tokenizer.encode(prompt)
             gen_ids = self.models[category].generate(torch.tensor([input_ids]),
-                                                     max_length=100,
+                                                     max_length=150,
                                                      repetition_penalty=2.0,
                                                      pad_token_id=self.tokenizer.pad_token_id,
                                                      eos_token_id=self.tokenizer.eos_token_id,
@@ -43,6 +43,10 @@ class NLP:
                                                      do_sample=True)
             generated = self.tokenizer.decode(gen_ids[0, :].tolist())
             if generated.strip() not in result:
+                generated = generated.replace('\n', ' ')
+                generated = re.sub(r'\s+', ' ', generated)
+                # 마침표 빠진 경우 추가
+                generated = generated.replace('니다 ', '니다. ')
                 result.add(generated)
         return list(result)
 
