@@ -1,11 +1,24 @@
 # localhost:8000/docs
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from NLP import NLP
 import uvicorn
 from pydantic import BaseModel
 import re
 
 app = FastAPI()
+
+origins = [
+    "http://localhost",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 nlp = NLP()
 
