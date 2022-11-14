@@ -15,7 +15,7 @@ class DropOutput(Callback):
 class NLP:
     def __init__(self):
         # device = torch.device('cpu')
-        self.categories = ['it', 'business', 'marketing', 'total']
+        self.categories = ['it', 'business', 'marketing']
         self.models = dict()
         for category in self.categories:
             self.models[category] = GPT2LMHeadModel.from_pretrained('./models/{}.pt'.format(category))
@@ -27,28 +27,47 @@ class NLP:
                                                                  mask_token='<mask>')
 
     def generate(self, category="total", prompt="제가 가장 중요하게 생각하는 것은", number=1):
-        result = set()
-        while len(result) < number:
-            input_ids = self.tokenizer.encode(prompt)
-            gen_ids = self.models[category].generate(torch.tensor([input_ids]),
-                                                     max_length=150,
-                                                     repetition_penalty=2.0,
-                                                     pad_token_id=self.tokenizer.pad_token_id,
-                                                     eos_token_id=self.tokenizer.eos_token_id,
-                                                     bos_token_id=self.tokenizer.bos_token_id,
-                                                     use_cache=True,
-                                                     temperature=1.1,
-                                                     top_k=50,
-                                                     top_p=0.8,
-                                                     do_sample=True)
-            generated = self.tokenizer.decode(gen_ids[0, :].tolist())
-            if generated.strip() not in result:
-                generated = generated.replace('\n', ' ')
-                generated = re.sub(r'\s+', ' ', generated)
-                # 마침표 빠진 경우 추가
-                generated = generated.replace('니다 ', '니다. ')
-                result.add(generated)
-        return list(result)
+        # result = set()
+        # while len(result) < number:
+        #     input_ids = self.tokenizer.encode(prompt)
+        #     gen_ids = self.models[category].generate(torch.tensor([input_ids]),
+        #                                              max_length=150,
+        #                                              repetition_penalty=2.0,
+        #                                              pad_token_id=self.tokenizer.pad_token_id,
+        #                                              eos_token_id=self.tokenizer.eos_token_id,
+        #                                              bos_token_id=self.tokenizer.bos_token_id,
+        #                                              use_cache=True,
+        #                                              temperature=1.1,
+        #                                              top_k=50,
+        #                                              top_p=0.8,
+        #                                              do_sample=True)
+        #     generated = self.tokenizer.decode(gen_ids[0, :].tolist())
+        #     if generated.strip() not in result:
+        #         generated = generated.replace('\n', ' ')
+        #         generated = re.sub(r'\s+', ' ', generated)
+        #         # 마침표 빠진 경우 추가
+        #         generated = generated.replace('니다 ', '니다. ')
+        #         result.add(generated)
+        # return list(result)
+        input_ids = self.tokenizer.encode(prompt)
+        res = []
+        preds = self.models[category].generate(torch.tensor([input_ids]),
+                                               max_length=100,
+                                               repetition_penalty=2.0,
+                                               pad_token_id=self.tokenizer.pad_token_id,
+                                               eos_token_id=self.tokenizer.eos_token_id,
+                                               bos_token_id=self.tokenizer.bos_token_id,
+                                               use_cache=True,
+                                               temperature=1.1,
+                                               top_k=50,
+                                               top_p=0.9,
+                                               do_sample=True,
+                                               num_return_sequences=number
+                                               )
+        for i, pred in enumerate(preds):
+            res.append(self.tokenizer.decode(pred.tolist()))
+            print(res[-1])
+        return res
 
 
 if __name__ == '__main__':

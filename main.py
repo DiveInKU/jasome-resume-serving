@@ -31,11 +31,11 @@ class PredictReq(BaseModel):
 
 @app.post(
     path="/generate",
-    description="category는 'it', 'business', 'marketing', 'total'로만 입력해주세요."
+    description="category는 'it', 'business', 'marketing' 로만 입력해주세요."
 )
 async def generate(req: PredictReq):
     if req.category not in nlp.categories:
-        return {"error": "{}는 지정된 카테고리가 아닙니다. category는 'it', 'business', 'marketing', 'total'로만 입력해주세요.".format(
+        return {"error": "{}는 지정된 카테고리가 아닙니다. category는 'it', 'business', 'marketing'로만 입력해주세요.".format(
             req.category)}
     if req.number == 0:
         return {"error": "생성하고 싶은 문장 개수를 입력해주세요."}
